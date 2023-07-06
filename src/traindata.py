@@ -4,25 +4,25 @@ import os
 
 class trainData():
 
-    def __init__(self, sampleSize, overlapRatio):
+    def __init__(self):
 
         self.current_folder_path = os.getcwd()
         self.parent_folder_path = os.path.dirname(self.current_folder_path)
-        self.data_save_path = os.path.join(self.parent_folder_path, 'train_data')
+        self.data_save_path = os.path.join(self.current_folder_path, 'train_data')
 
-    def addDataPathtoCurrent(self,path):
-        return os.path.join(self.current_folder_path,path)
+    def addDatatoPath(self,path):
+        return os.path.join(self.data_save_path,path)
     
     def readData(self,string):
-
+        print(string)
         df = pd.read_feather(string)
         if "time" in df.columns :
             df = df.drop(columns = {'time'})
 
-        df = df.drop(index=0)
+        self.df = df.drop(index=0)
 
-    def splitData(self,df):
-
+    def splitData(self):
+        df = self.df
         df['label'] = df['label'].str.replace(' ', '')
 
         # Split the dataset based on labels
@@ -90,7 +90,7 @@ class trainData():
 
         self.train_data = self.train_data.reset_index(drop=True, inplace=False)
 
-        print('test data shape: ' + self.train_data.shape)
+        print('test data shape: ' , self.train_data.shape)
 
     def prepareOutput(self):
         
@@ -99,6 +99,8 @@ class trainData():
 
         trainName = 'train_data_values_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
         labelName = 'train_labels_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+        trainName = self.addDatatoPath(trainName)
+        labelName = self.addDatatoPath(labelName)
         
         train_data_values.to_pickle(trainName)
         train_labels = pd.DataFrame(train_labels)
@@ -109,11 +111,12 @@ class trainData():
 
         return train_data_values, train_labels
     
-    def preparetrainData(self, sampleSize, overlapRatio, path):
+    def prepareTrainData(self, sampleSize, overlapRatio, path):
         self.sampleSize = sampleSize
         self.overlapRatio = overlapRatio
         self.feather_path = os.path.join(self.data_save_path, path)
-        self.readData(path)
+        self.readData(self.feather_path)
         self.splitData()
-        self.mergeData(sampleSize, overlapRatio)
-        self.prepareOutput()
+        self.mergeData()
+        train_data_values, train_labels = self.prepareOutput()
+        return train_data_values, train_labels

@@ -8,15 +8,18 @@ class testData():
 
         self.current_folder_path = os.getcwd()
         self.parent_folder_path = os.path.dirname(self.current_folder_path)
-        self.data_save_path = os.path.join(self.parent_folder_path, 'test_data')
+        self.data_save_path = os.path.join(self.current_folder_path, 'test_data')
 
 
     def addDataPathtoCurrent(self,path):
         return os.path.join(self.current_folder_path,path)
     
+    def addDatatoPath(self,path):
+        return os.path.join(self.data_save_path,path)
+    
     def readData(self,string):
 
-        df = pd.read_feather(string)
+        df = pd.read_pickle(string)
 
         if "time" in df.columns :
             df = df.drop(columns = {'time'})
@@ -85,7 +88,7 @@ class testData():
 
         self.test_data = self.test_data.reset_index(drop=True, inplace=False)
 
-        print('test data shape: ' + self.test_data.shape)
+        print('test data shape: ' , self.test_data.shape)
 
     def prepareOutput(self):
         
@@ -94,6 +97,9 @@ class testData():
 
         testName = 'test_data_values_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
         labelName = 'test_labels_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+
+        testName = self.addDatatoPath(testName)
+        labelName = self.addDatatoPath(labelName)
         
         test_data_values.to_pickle(testName)
         test_labels = pd.DataFrame(test_labels)
@@ -107,9 +113,10 @@ class testData():
     def prepareTestData(self, sampleSize, overlapRatio, path):
         self.sampleSize = sampleSize
         self.overlapRatio = overlapRatio
-        self.feather_path = os.path.join(self.data_save_path, path)
-        self.readData(path)
+        self.pickle_path = os.path.join(self.data_save_path, path)
+        self.readData(self.pickle_path)
         self.splitData()
         self.mergeData(sampleSize, overlapRatio)
-        self.prepareOutput()
+        test_data_values, test_labels = self.prepareOutput()
+        return test_data_values, test_labels
 
