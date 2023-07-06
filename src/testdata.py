@@ -75,20 +75,21 @@ class testData():
 
         return new_df
     
-    def mergeData(self, sampleSize, overlapRatio):
+    def mergeData(self):
         self.test_data = pd.DataFrame()
         
         for key in self.datasets.keys():
 
             df = self.datasets[key]
             df = df.reset_index(drop=True, inplace=False)
-            df = self.split_column_into_rows(df,sampleSize, overlapRatio)
+            df = self.split_column_into_rows(df,self.sampleSize, self.overlapRatio)
             df = df.drop(df.index[-1])
             self.test_data = pd.concat([self.test_data,df])
 
         self.test_data = self.test_data.reset_index(drop=True, inplace=False)
 
         print('test data shape: ' , self.test_data.shape)
+
 
     def prepareOutput(self):
         
@@ -116,7 +117,7 @@ class testData():
         self.pickle_path = os.path.join(self.data_save_path, path)
         self.readData(self.pickle_path)
         self.splitData()
-        self.mergeData(sampleSize, overlapRatio)
+        self.mergeData()
         test_data_values, test_labels = self.prepareOutput()
         return test_data_values, test_labels
 

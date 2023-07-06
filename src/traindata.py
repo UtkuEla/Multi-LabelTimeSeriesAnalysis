@@ -90,7 +90,18 @@ class trainData():
 
         self.train_data = self.train_data.reset_index(drop=True, inplace=False)
 
-        print('test data shape: ' , self.train_data.shape)
+        print('train data shape: ' , self.train_data.shape)
+        return self.train_data
+
+    def convert_labels_to_integers(self):
+        unique_labels = self.train_data['label'].unique()
+        label_to_integer = {label: i+1 for i, label in enumerate(unique_labels)}
+        self.train_data['label'] = self.train_data['label'].map(label_to_integer)
+        
+        for label, integer in label_to_integer.items():
+            print(f"Label '{label}' changed to integer '{integer}'")
+        
+        return self.train_data
 
     def prepareOutput(self):
         
@@ -106,7 +117,7 @@ class trainData():
         train_labels = pd.DataFrame(train_labels)
         train_labels.to_pickle(labelName)
 
-        print(len(train_data_values))
+        print(train_data_values.shape)
         print(train_labels.shape)
 
         return train_data_values, train_labels
@@ -118,5 +129,6 @@ class trainData():
         self.readData(self.feather_path)
         self.splitData()
         self.mergeData()
+        self.convert_labels_to_integers()
         train_data_values, train_labels = self.prepareOutput()
         return train_data_values, train_labels
