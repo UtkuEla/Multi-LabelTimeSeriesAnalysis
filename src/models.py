@@ -18,7 +18,7 @@ from keras.optimizers import Adam
 from sklearn.metrics import classification_report, confusion_matrix
 import sklearn
 
-class TimeSeriesModel:
+class Models:
     """
     This class inolves different model architectures
 
@@ -138,7 +138,48 @@ class TimeSeriesModel:
         pass
 
 
-class NewModels:
-    def __init__(self):
-        pass
+class ParallelModels:
 
+    def __init__(self, input_shape, num_classes):
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+
+    def P_CNN_RNN_1(self):
+        
+        input_layer = Input(shape=self.input_shape)
+
+        conv_branch1 = Conv1D(filters=128, kernel_size=3, activation='relu')(input_layer)
+
+        # Convolutional branch
+        conv_branch = Conv1D(filters=64, kernel_size=3, activation='relu')(conv_branch1)
+        conv_branch = MaxPooling1D(pool_size=2)(conv_branch)
+
+        # First recurrent branch
+        rnn_branch1 = LSTM(units=64, return_sequences=True)(conv_branch1)
+
+        # Second recurrent branch
+        rnn_branch2 = LSTM(units=64, return_sequences=True)(rnn_branch1)
+
+        # Apply global max pooling to the convolutional branch
+        conv_branch = GlobalMaxPooling1D()(conv_branch)
+
+        # Apply global max pooling to the recurrent branches
+        rnn_branch2 = GlobalMaxPooling1D()(rnn_branch2)
+
+        # Concatenate the outputs of all branches
+        concatenated = concatenate([conv_branch, rnn_branch2])
+
+        # Classification layers
+        dense_layer = Dense(units=128, activation='relu')(concatenated)
+        output_layer = Dense(units=self.num_classes, activation='softmax')(dense_layer)
+
+        # Create the model
+        self.model = Model(inputs=input_layer, outputs=output_layer)
+
+        # Compile the model
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+        return self.model
+
+        def P_CNN_RNN_2(self):
+            pass

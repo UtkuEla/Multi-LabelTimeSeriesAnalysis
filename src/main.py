@@ -8,11 +8,12 @@ from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import sklearn
 from sklearn.preprocessing import LabelEncoder
-
+from datetime import datetime
 import os
 from pathlib import Path
 
 class ModelTraining:
+    
     def __init__(self, data_path, label_path):
         self.data_path = data_path
         self.label_path = label_path
@@ -26,12 +27,13 @@ class ModelTraining:
         self.input_shape = None
 
     def load_data(self):
-        values = pd.read_pickle(self.data_path)
-        labels = pd.read_pickle(self.label_path)
+        self.values = pd.read_pickle(self.data_path)
+        self.labels = pd.read_pickle(self.label_path)
 
-        self.labels = labels.values
+        self.values = self.values.values
+        self.labels = self.labels.values
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(values, self.labels, test_size=0.2, random_state=42)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.values, self.labels, test_size=0.2, random_state=42)
 
         self.X_train = self.X_train.reshape((self.X_train.shape[0], self.X_train.shape[1], 1))
         self.X_test = self.X_test.reshape((self.X_test.shape[0], self.X_test.shape[1], 1))
@@ -44,58 +46,40 @@ class ModelTraining:
         self.nb_classes = len(np.unique(np.concatenate((self.y_train, self.y_test), axis=0)))
         self.input_shape = self.X_train.shape[1:]
 
+        print("Number of Classes:", self.nb_classes)
+        print("Input Shape:", self.input_shape)
+
     def preprocess_labels(self):
         enc = sklearn.preprocessing.OneHotEncoder(categories='auto')
         enc.fit(np.concatenate((self.y_train, self.y_test), axis=0).reshape(-1, 1))
         self.y_train = enc.transform(self.y_train.reshape(-1, 1)).toarray()
         self.y_test = enc.transform(self.y_test.reshape(-1, 1)).toarray()
 
-    def build_model(self):
-        input_layer = Input(shape=self.input_shape)
-
-        conv_branch1 = Conv1D(filters=128, kernel_size=3, activation='relu')(input_layer)
-
-        # Convolutional branch
-        conv_branch = Conv1D(filters=64, kernel_size=3, activation='relu')(conv_branch1)
-        conv_branch = MaxPooling1D(pool_size=2)(conv_branch)
-
-        # First recurrent branch
-        rnn_branch1 = LSTM(units=64, return_sequences=True)(conv_branch1)
-
-        # Second recurrent branch
-        rnn_branch2 = LSTM(units=64, return_sequences=True)(input_layer)
-
-        # Apply global max pooling to the convolutional branch
-        conv_branch = GlobalMaxPooling1D()(conv_branch)
-
-        # Apply global max pooling to the recurrent branches
-        rnn_branch1 = GlobalMaxPooling1D()(rnn_branch1)
-        rnn_branch2 = GlobalMaxPooling1D()(rnn_branch2)
-
-        # Concatenate the outputs of all branches
-        concatenated = concatenate([conv_branch, rnn_branch1, rnn_branch2])
-
-        # Classification layers
-        dense_layer = Dense(units=128, activation='relu')(concatenated)
-        output_layer = Dense(units=self.nb_classes, activation='softmax')(dense_layer)
-
-        # Create the model
-        self.model = Model(inputs=input_layer, outputs=output_layer)
-
-        # Compile the model
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    def import_model(self,modelName):
+        from models import Models, ParallelModels
+        models = ParallelModels(self.input_shape, self.nb_classes)
+        model_function = getattr(models,modelName)
+        self.model = model_function()
+        print(self.model.summary())
 
     def train_model(self, batch_size=32, nb_epochs=500):
+        
         early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
 
         hist = self.model.fit(self.X_train, self.y_train, batch_size=batch_size, epochs=nb_epochs,
                               validation_data=(self.X_test, self.y_test), callbacks=[early_stopping])
 
-    def save_model(self, model_path):
-        self.model.save(model_path)
+    def save_model(self,model_path, modelName):
+        now = datetime.now()
+        timestamp = now.strftime("%d-%m-%H-%M")
+        model_filename = model_path + '/' + modelName + '_' + f"_{timestamp}.h5"
+        self.model.save(model_filename)
+        print(f"Model saved as {model_filename}")
 
-    def load_model(self, model_path):
-        self.model = tf.keras.models.load_model(model_path)
+    def load_trained_model(self, model_path, modelName):
+        path = os.path.join(model_path, modelName)
+        self.model = tf.keras.models.load_model(path)
+
 
     def load_test_data(self, test_data_path, test_label_path):
         test_values = pd.read_pickle(test_data_path)
@@ -113,22 +97,19 @@ class ModelTraining:
 
         # Iterate over each row of predictions
         for row in self.predictions:
-            # Sort the probabilities in descending order and get the indices
+
             sorted_indices = np.argsort(row)[::-1]
 
-            # Check if the highest prediction is above the threshold
             if row[sorted_indices[0]] >= threshold:
                 prediction1 = sorted_indices[0]
             else:
                 prediction1 = 3
 
-            # Check if the second highest prediction is above the threshold
             if row[sorted_indices[1]] >= threshold:
                 prediction2 = sorted_indices[1]
             else:
                 prediction2 = 3
 
-            # Add the predictions to the list
             prediction_list.append([prediction1, prediction2])
 
         prediction_list = np.array(prediction_list)
@@ -138,37 +119,52 @@ class ModelTraining:
         predicted_labels_1 = label_encoder.inverse_transform(prediction_list[:, 0])
         predicted_labels_2 = label_encoder.inverse_transform(prediction_list[:, 1])
         df_predictions = pd.DataFrame({'Prediction': predicted_labels_1, 'Prediction2': predicted_labels_2})
-
-        # Display the resulting DataFrame
+        
+        now = datetime.now()
+        timestamp = now.strftime("%d-%m-%H-%M")
+        prediction_name = model_path + modelName + f"_{timestamp}" + "_predictions.xlsx"
         print(df_predictions)
-        df_predictions.to_excel('predictions4.xlsx')
+        df_predictions.to_excel(prediction_name)
 
 
-# Usage example:
-data_path = os.path.join(parent_folder_path, 'train_data_values_300_10')
-label_path = os.path.join(parent_folder_path, 'train_labels_300_10')
+modelName = 'P_CNN_RNN_1'
 
-test_data_path = 'test_data_values_300_10'
-test_label_path = 'test_labels_300_10'
+current_folder_path = os.path.dirname(os.path.abspath(__file__))
+parent_folder_path = os.path.dirname(current_folder_path)
+data_save_path = os.path.join(parent_folder_path, 'data')
+model_path = os.path.join(parent_folder_path,'models')
 
-model_path = 'model_parallel_azad.hdf5'
+train_data_path = os.path.join(parent_folder_path,'train_data', 'train_data_values_300_10')
+train_label_path = os.path.join(parent_folder_path,'train_data' ,'train_labels_300_10')
+
+test_data_path = os.path.join(parent_folder_path,'test_data', 'test_data_values_300_10')
+test_label_path = os.path.join(parent_folder_path,'test_data' ,'test_labels_300_10')
+
+
+# print("Current Folder Path:", current_folder_path)
+# print("Parent Folder Path:", parent_folder_path)
+# print("Data Save Path:", data_save_path)
+# print("Model Path:", model_path)
+# print("Test Data Path:", test_data_path)
+# print("Test Label Path:", test_label_path)
 
 # Create an instance of the ModelTraining class
-model_trainer = ModelTraining(data_path, label_path)
+model_trainer = ModelTraining(train_data_path, train_label_path)
 
 # Load and preprocess the data
 model_trainer.load_data()
 model_trainer.preprocess_labels()
 
 # Build and train the model
-model_trainer.build_model()
-model_trainer.train_model()
+model_trainer.import_model(modelName)
+model_trainer.train_model(32,5)
 
 # Save the trained model
-model_trainer.save_model(model_path)
+model_trainer.save_model(model_path,modelName)
 
 # Load the saved model
-model_trainer.load_model(model_path)
+# trained_modelName = ""
+# model_trainer.load_trained_model(model_path, trained_modelName)
 
 # Load test data and make predictions
 model_trainer.load_test_data(test_data_path, test_label_path)
