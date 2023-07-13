@@ -15,7 +15,9 @@ readme will be updated.
 
 300 - 150 - 50 sampling rates with a 10% overlap
 
-K-fold-Cross-Validation instead of train-test split
+K-fold-Cross-Validation instead of train-test split:
+
+in K-fold-Cross-Validation, you need to split your dataset into several folds, then you train your model on all folds except one and test model on remaining fold. You need to repeat this steps until you tested your model on each of the folds and your final metrics will be average of scores obtained in every fold. This allows you to prevent overfitting, and evaluate model performance in a more robust way than simple train-test.
 
 Examining more metrics since 98% accuracy is good but might be hiding the big picture!
 
