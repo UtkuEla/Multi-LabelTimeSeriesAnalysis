@@ -1,6 +1,14 @@
 # ProjectArbeit
 Repo for Summer23 Project Arbeit
 
+test_data and train_data folders contains the datasets I have been using.
+
+main.py is the main script for combining all the other code and training.
+
+However, I am using google colab for training and testing ideas so the main.py script is not up-to-date.
+
+At the end, main.py will be the final script.
+
 readme will be updated.
 
 # ideas to try:
