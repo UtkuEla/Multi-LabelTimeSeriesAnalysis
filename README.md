@@ -28,10 +28,44 @@ I will add precision, recall, and hamming loss in addition to accuracy. In the e
 ## Take away the NoFault and Outliers class and try to model again!
 
 They might be disturbing the homogenous nature of the dataset! After I had a successful model, I will make a data augmentation for Outliers and add it back! For the NoFault, it seems it might not be necessary to have it.
+These are the results of 30 pieces of training in K-fold-cross-validation:
+Accuracy: 0.854, Max: 0.98, Min:0.38 
+I think this suggests that there is an imbalance in the dataset.
+
+[0.8128654970760234,
+ 0.97953216374269,
+ 0.8421052631578947,
+ 0.7017543859649122,
+ 0.38011695906432746,
+ 0.956140350877193,
+ 0.7807017543859649,
+ 0.8567251461988304,
+ 0.9649122807017544,
+ 0.9706744868035191,
+ 0.9736842105263158,
+ 0.9649122807017544,
+ 0.9532163742690059,
+ 0.6812865497076024,
+ 0.9678362573099415,
+ 0.827485380116959,
+ 0.97953216374269,
+ 0.9532163742690059,
+ 0.9502923976608187,
+ 0.4398826979472141,
+ 0.4619883040935672,
+ 0.9473684210526315,
+ 0.956140350877193,
+ 0.9532163742690059,
+ 0.9619883040935673,
+ 0.9385964912280702,
+ 0.956140350877193,
+ 0.8216374269005848,
+ 0.9298245614035088,
+ 0.7419354838709677]
 
 ## Multi-Label classification from a single-label dataset is the keyword!
 
-Very less example (almost none), existing ones are NLP and not quite applicable to my scenario.
+Very less examples (almost none), existing ones are NLP and not quite applicable to my scenario.
 
 ## Z-normalization for drift dataset(will be applied to all)! Maybe it can solve the dominance issue.
 
