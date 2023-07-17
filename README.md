@@ -63,6 +63,20 @@ I think this suggests that there is an imbalance in the dataset.
  0.9298245614035088,
  0.7419354838709677]
 
+ After testing without outliers and NoFault these are the results for 10 training:
+ Accuracy: 0.990 (0.008) Max: 1.0, Min: 0.97
+
+ [0.9963503649635036,
+ 0.9890510948905109,
+ 1.0,
+ 0.9744525547445255,
+ 0.9963503649635036,
+ 0.9817518248175182,
+ 0.9963369963369964,
+ 0.9853479853479854,
+ 0.9963369963369964,
+ 0.9853479853479854]
+
 ## Multi-Label classification from a single-label dataset is the keyword!
 
 Very less examples (almost none), existing ones are NLP and not quite applicable to my scenario.
