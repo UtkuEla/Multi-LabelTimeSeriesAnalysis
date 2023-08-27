@@ -31,11 +31,16 @@ class testData():
         df['label'] = df['label'].str.replace(' ', '')
 
         # Split the dataset based on labels
+    #     labels = ['Bias+Drift', 'Bias+Gain', 'Bias+Precisiondegradation', 'Bias',
+    #    'Bias+Outliers', 'Drift+Gain', 'Drift+Precisiondegradation',
+    #    'Drift', 'Drift+Outliers', 'Gain+Precisiondegradation', 'Gain',
+    #    'Gain+Outliers', 'Precisiondegradation',
+    #    'Precisiondegradation+Outliers']
+        
         labels = ['Bias+Drift', 'Bias+Gain', 'Bias+Precisiondegradation', 'Bias',
-       'Bias+Outliers', 'Drift+Gain', 'Drift+Precisiondegradation',
-       'Drift', 'Drift+Outliers', 'Gain+Precisiondegradation', 'Gain',
-       'Gain+Outliers', 'Precisiondegradation',
-       'Precisiondegradation+Outliers']
+        'Drift+Gain', 'Drift+Precisiondegradation',
+       'Drift', 'Gain+Precisiondegradation', 'Gain',
+        'Precisiondegradation', 'Precisiondegradation+Outliers']
 
         self.datasets = {}
         self.dataframes =[]
@@ -96,8 +101,8 @@ class testData():
         test_labels = self.test_data['label'].values
         test_data_values = self.test_data.drop(columns={'label'})
 
-        testName = 'test_data_values_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
-        labelName = 'test_labels_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+        testName = 'test_data_values_less' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+        labelName = 'test_labels_less' + str(self.sampleSize) + "_" + str(self.overlapRatio)
 
         testName = self.addDatatoPath(testName)
         labelName = self.addDatatoPath(labelName)

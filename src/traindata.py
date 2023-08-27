@@ -26,8 +26,8 @@ class trainData():
         df['label'] = df['label'].str.replace(' ', '')
 
         # Split the dataset based on labels
-        labels = ['Bias', 'Drift', 'Gain', 'NoFault', 'Outliers', 'Precisiondegradation']
-
+        # labels = ['Bias', 'Drift', 'Gain', 'NoFault', 'Outliers', 'Precisiondegradation']
+        labels = ['Bias', 'Drift', 'Gain', 'Precisiondegradation','NoFault']
         self.datasets = {}
         self.dataframes =[]
 
@@ -44,7 +44,7 @@ class trainData():
             print("Size of df_Drift:", df_Drift.shape)
             print("Size of df_Gain:", df_Gain.shape)
             print("Size of df_NoFault:", df_NoFault.shape)
-            print("Size of df_Outliers:", df_Outliers.shape)
+            # print("Size of df_Outliers:", df_Outliers.shape)
             print("Size of df_PrecisionDegredatation:", df_Precisiondegradation.shape)
 
         except:
@@ -108,8 +108,8 @@ class trainData():
         train_labels = self.train_data['label'].values
         train_data_values = self.train_data.drop(columns={'label'})
 
-        trainName = 'train_data_values_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
-        labelName = 'train_labels_' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+        trainName = 'train_data_values_withNoFault' + str(self.sampleSize) + "_" + str(self.overlapRatio)
+        labelName = 'train_labels_lesswithNoFault' + str(self.sampleSize) + "_" + str(self.overlapRatio)
         trainName = self.addDatatoPath(trainName)
         labelName = self.addDatatoPath(labelName)
         
